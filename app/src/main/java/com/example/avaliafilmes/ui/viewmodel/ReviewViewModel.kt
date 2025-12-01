@@ -13,6 +13,8 @@ sealed class ReviewState {
     object Idle : ReviewState()
     object Loading : ReviewState()
     object Success : ReviewState()
+    object Deleted : ReviewState()
+    object Updated : ReviewState()
     data class Error(val message: String) : ReviewState()
 }
 
@@ -32,6 +34,9 @@ class ReviewViewModel(private val reviewRepository: MovieReviewRepository) : Vie
     
     private val _averageRating = MutableStateFlow(0f)
     val averageRating: StateFlow<Float> = _averageRating.asStateFlow()
+    
+    private val _reviewToEdit = MutableStateFlow<MovieReview?>(null)
+    val reviewToEdit: StateFlow<MovieReview?> = _reviewToEdit.asStateFlow()
     
     fun addReview(
         userId: Long,
@@ -97,6 +102,52 @@ class ReviewViewModel(private val reviewRepository: MovieReviewRepository) : Vie
     
     suspend fun getUserReviewForMovie(userId: Long, imdbId: String): MovieReview? {
         return reviewRepository.getUserReviewForMovie(userId, imdbId)
+    }
+    
+    fun deleteReview(review: MovieReview, userId: Long) {
+        viewModelScope.launch {
+            _reviewState.value = ReviewState.Loading
+            
+            val result = reviewRepository.deleteReview(review)
+            
+            result.fold(
+                onSuccess = {
+                    _reviewState.value = ReviewState.Deleted
+                    loadUserReviews(userId)
+                },
+                onFailure = { exception ->
+                    _reviewState.value = ReviewState.Error(exception.message ?: "Erro ao excluir avaliação")
+                }
+            )
+        }
+    }
+    
+    fun updateReview(review: MovieReview, newRating: Float, newComment: String, userId: Long) {
+        viewModelScope.launch {
+            _reviewState.value = ReviewState.Loading
+            
+            val updatedReview = review.copy(
+                rating = newRating,
+                comment = newComment,
+                timestamp = System.currentTimeMillis()
+            )
+            
+            val result = reviewRepository.updateReview(updatedReview)
+            
+            result.fold(
+                onSuccess = {
+                    _reviewState.value = ReviewState.Updated
+                    loadUserReviews(userId)
+                },
+                onFailure = { exception ->
+                    _reviewState.value = ReviewState.Error(exception.message ?: "Erro ao atualizar avaliação")
+                }
+            )
+        }
+    }
+    
+    fun setReviewToEdit(review: MovieReview?) {
+        _reviewToEdit.value = review
     }
     
     fun resetReviewState() {

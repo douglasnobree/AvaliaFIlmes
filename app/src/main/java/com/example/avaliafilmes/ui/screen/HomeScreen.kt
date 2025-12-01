@@ -3,8 +3,9 @@ package com.example.avaliafilmes.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -39,7 +40,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            Icons.Default.Menu,
+                            Icons.Default.Star,
                             contentDescription = null,
                             tint = AccentOrange
                         )
@@ -121,15 +122,15 @@ fun HomeScreen(
             
             MenuCard(
                 title = "Minhas Avaliações",
-                description = "Veja seus filmes avaliados",
-                icon = Icons.Default.Star,
+                description = "Veja e edite seus filmes avaliados",
+                icon = Icons.Default.Favorite,
                 onClick = onNavigateToMyReviews
             )
             
             MenuCard(
                 title = "Todas as Avaliações",
                 description = "Explore avaliações da comunidade",
-                icon = Icons.Default.Star,
+                icon = Icons.Default.AccountCircle,
                 onClick = onNavigateToAllReviews
             )
         }

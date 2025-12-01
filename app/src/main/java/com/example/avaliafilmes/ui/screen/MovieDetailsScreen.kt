@@ -3,6 +3,7 @@ package com.example.avaliafilmes.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -105,7 +107,8 @@ fun MovieDetailsScreen(
                                 contentDescription = movie.Title,
                                 modifier = Modifier
                                     .width(120.dp)
-                                    .height(180.dp),
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
                                 contentScale = ContentScale.Crop
                             )
                             
@@ -115,12 +118,25 @@ fun MovieDetailsScreen(
                                 Text(
                                     text = movie.Title,
                                     fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
-                                Text(text = "Ano: ${movie.Year}")
-                                Text(text = "Gênero: ${movie.Genre}")
-                                Text(text = "Diretor: ${movie.Director}")
-                                Text(text = "IMDb: ${movie.imdbRating}")
+                                Text(
+                                    text = "Ano: ${movie.Year}",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "Gênero: ${movie.Genre}",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "Diretor: ${movie.Director}",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "IMDb: ${movie.imdbRating}",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                                 
                                 if (movieReviews.isNotEmpty()) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -133,7 +149,8 @@ fun MovieDetailsScreen(
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
                                             text = String.format("%.1f/5.0 (${movieReviews.size} avaliações)", averageRating),
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onBackground
                                         )
                                     }
                                 }
@@ -143,15 +160,21 @@ fun MovieDetailsScreen(
                     
                     // Sinopse
                     item {
-                        Card {
+                        Card(
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
                                     text = "Sinopse",
                                     fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(text = movie.Plot)
+                                Text(
+                                    text = movie.Plot,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -160,7 +183,8 @@ fun MovieDetailsScreen(
                     item {
                         Button(
                             onClick = { showReviewDialog = true },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Icon(Icons.Default.Star, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
@@ -173,11 +197,12 @@ fun MovieDetailsScreen(
                         Text(
                             text = "Avaliações (${movieReviews.size})",
                             fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                     
-                    items(movieReviews) { review ->
+                    items(movieReviews, key = { it.id }) { review ->
                         ReviewCard(review)
                     }
                 }
@@ -220,7 +245,8 @@ fun MovieDetailsScreen(
 fun ReviewCard(review: MovieReview) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -241,12 +267,16 @@ fun ReviewCard(review: MovieReview) {
                 Text(
                     text = String.format("%.1f", review.rating),
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
             
             if (review.comment.isNotBlank()) {
-                Text(text = review.comment)
+                Text(
+                    text = review.comment,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             
             Text(
@@ -276,19 +306,28 @@ fun ReviewDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Avaliar: $movieTitle") },
+        title = { 
+            Text(
+                "Avaliar: $movieTitle",
+                color = MaterialTheme.colorScheme.onSurface
+            ) 
+        },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Sua nota:")
+                Text(
+                    "Sua nota:",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     repeat(5) { index ->
                         IconButton(
-                            onClick = { rating = (index + 1).toFloat() }
+                            onClick = { rating = (index + 1).toFloat() },
+                            modifier = Modifier.size(40.dp)
                         ) {
                             Icon(
                                 imageVector = if (index < rating) Icons.Filled.Star else Icons.Outlined.Star,
@@ -298,7 +337,10 @@ fun ReviewDialog(
                             )
                         }
                     }
-                    Text(text = String.format("%.1f", rating))
+                    Text(
+                        text = String.format("%.1f", rating),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
                 
                 OutlinedTextField(
@@ -306,8 +348,15 @@ fun ReviewDialog(
                     onValueChange = { comment = it },
                     label = { Text("Comentário (opcional)") },
                     modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
                     maxLines = 4,
-                    enabled = reviewState !is ReviewState.Loading
+                    enabled = reviewState !is ReviewState.Loading,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
                 )
                 
                 if (reviewState is ReviewState.Error) {
