@@ -134,6 +134,9 @@ fun AvaliaFilmesApp(
                 onNavigateToAllReviews = {
                     navController.navigate(Screen.AllReviews.route)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
@@ -191,6 +194,21 @@ fun AvaliaFilmesApp(
                 },
                 onMovieClick = { imdbId ->
                     navController.navigate(Screen.MovieDetails.createRoute(imdbId))
+                }
+            )
+        }
+        
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                authViewModel = authViewModel,
+                reviewViewModel = reviewViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

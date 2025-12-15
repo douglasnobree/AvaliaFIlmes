@@ -39,7 +39,26 @@ class UserRepository(private val userDao: UserDao) {
         return userDao.getUserById(userId)
     }
     
-    suspend fun updateUser(user: User) {
-        userDao.update(user)
+    suspend fun updateUser(user: User): Result<Unit> {
+        return try {
+            // Verifica se o novo email já está sendo usado por outro usuário
+            val existingUser = userDao.getUserByEmail(user.email)
+            if (existingUser != null && existingUser.id != user.id) {
+                return Result.failure(Exception("Email já está em uso"))
+            }
+            userDao.update(user)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun deleteUser(user: User): Result<Unit> {
+        return try {
+            userDao.delete(user)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

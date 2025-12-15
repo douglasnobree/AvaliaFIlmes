@@ -58,6 +58,59 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         }
     }
     
+    fun updateUser(userId: Long, newUsername: String, newEmail: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            
+            val currentUserValue = _currentUser.value
+            if (currentUserValue == null) {
+                _authState.value = AuthState.Error("Usuário não encontrado")
+                return@launch
+            }
+            
+            val updatedUser = currentUserValue.copy(
+                username = newUsername,
+                email = newEmail
+            )
+            
+            val result = userRepository.updateUser(updatedUser)
+            
+            result.fold(
+                onSuccess = {
+                    _currentUser.value = updatedUser
+                    _authState.value = AuthState.Success(updatedUser)
+                },
+                onFailure = { exception ->
+                    _authState.value = AuthState.Error(exception.message ?: "Erro ao atualizar perfil")
+                }
+            )
+        }
+    }
+    
+    fun deleteAccount() {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            
+            val currentUserValue = _currentUser.value
+            if (currentUserValue == null) {
+                _authState.value = AuthState.Error("Usuário não encontrado")
+                return@launch
+            }
+            
+            val result = userRepository.deleteUser(currentUserValue)
+            
+            result.fold(
+                onSuccess = {
+                    _currentUser.value = null
+                    _authState.value = AuthState.Idle
+                },
+                onFailure = { exception ->
+                    _authState.value = AuthState.Error(exception.message ?: "Erro ao deletar conta")
+                }
+            )
+        }
+    }
+    
     fun logout() {
         _currentUser.value = null
         _authState.value = AuthState.Idle

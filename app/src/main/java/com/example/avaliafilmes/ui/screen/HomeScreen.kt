@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -27,6 +28,7 @@ fun HomeScreen(
     onNavigateToSearch: () -> Unit,
     onNavigateToMyReviews: () -> Unit,
     onNavigateToAllReviews: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -132,6 +134,13 @@ fun HomeScreen(
                 description = "Explore avaliações da comunidade",
                 icon = Icons.Default.AccountCircle,
                 onClick = onNavigateToAllReviews
+            )
+            
+            MenuCard(
+                title = "Meu Perfil",
+                description = "Visualizar e editar perfil",
+                icon = Icons.Default.Person,
+                onClick = onNavigateToProfile
             )
         }
     }
