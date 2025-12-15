@@ -29,6 +29,8 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
     
     val authState by authViewModel.authState.collectAsState()
     
@@ -101,7 +103,10 @@ fun LoginScreen(
                     // Email field
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = { 
+                            email = it
+                            emailError = null
+                        },
                         label = { Text("Email", color = MaterialTheme.colorScheme.onSurface) },
                         leadingIcon = {
                             Icon(
@@ -113,6 +118,15 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         enabled = authState !is AuthState.Loading,
+                        isError = emailError != null,
+                        supportingText = {
+                            if (emailError != null) {
+                                Text(
+                                    text = emailError!!,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = AccentOrange,
                             focusedLabelColor = AccentOrange,
@@ -130,7 +144,10 @@ fun LoginScreen(
                     // Password field
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = { 
+                            password = it
+                            passwordError = null
+                        },
                         label = { Text("Senha", color = MaterialTheme.colorScheme.onSurface) },
                         leadingIcon = {
                             Icon(
@@ -143,6 +160,15 @@ fun LoginScreen(
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         enabled = authState !is AuthState.Loading,
+                        isError = passwordError != null,
+                        supportingText = {
+                            if (passwordError != null) {
+                                Text(
+                                    text = passwordError!!,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = AccentOrange,
                             focusedLabelColor = AccentOrange,
@@ -178,11 +204,34 @@ fun LoginScreen(
                     
                     // Login button
                     Button(
-                        onClick = { authViewModel.login(email, password) },
+                        onClick = { 
+                            // Validações
+                            var hasError = false
+                            
+                            if (email.isBlank()) {
+                                emailError = "O email não pode ser vazio"
+                                hasError = true
+                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                emailError = "Email inválido"
+                                hasError = true
+                            }
+                            
+                            if (password.isBlank()) {
+                                passwordError = "A senha não pode ser vazia"
+                                hasError = true
+                            } else if (password.length < 6) {
+                                passwordError = "A senha deve ter no mínimo 6 caracteres"
+                                hasError = true
+                            }
+                            
+                            if (!hasError) {
+                                authViewModel.login(email, password)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank(),
+                        enabled = authState !is AuthState.Loading,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = AccentOrange,

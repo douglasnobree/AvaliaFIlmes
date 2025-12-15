@@ -36,7 +36,10 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+    var usernameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
     
     val authState by authViewModel.authState.collectAsState()
     val scrollState = rememberScrollState()
@@ -135,7 +138,10 @@ fun RegisterScreen(
                         // Username field
                         OutlinedTextField(
                             value = username,
-                            onValueChange = { username = it },
+                            onValueChange = { 
+                                username = it
+                                usernameError = null
+                            },
                             label = { Text("Nome de usuário", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = {
                                 Icon(
@@ -147,6 +153,15 @@ fun RegisterScreen(
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             enabled = authState !is AuthState.Loading,
+                            isError = usernameError != null,
+                            supportingText = {
+                                if (usernameError != null) {
+                                    Text(
+                                        text = usernameError!!,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = AccentOrange,
                                 focusedLabelColor = AccentOrange,
@@ -164,7 +179,10 @@ fun RegisterScreen(
                         // Email field
                         OutlinedTextField(
                             value = email,
-                            onValueChange = { email = it },
+                            onValueChange = { 
+                                email = it
+                                emailError = null
+                            },
                             label = { Text("Email", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = {
                                 Icon(
@@ -176,6 +194,15 @@ fun RegisterScreen(
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             enabled = authState !is AuthState.Loading,
+                            isError = emailError != null,
+                            supportingText = {
+                                if (emailError != null) {
+                                    Text(
+                                        text = emailError!!,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = AccentOrange,
                                 focusedLabelColor = AccentOrange,
@@ -193,7 +220,10 @@ fun RegisterScreen(
                         // Password field
                         OutlinedTextField(
                             value = password,
-                            onValueChange = { password = it },
+                            onValueChange = { 
+                                password = it
+                                passwordError = null
+                            },
                             label = { Text("Senha", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = {
                                 Icon(
@@ -206,6 +236,15 @@ fun RegisterScreen(
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
                             enabled = authState !is AuthState.Loading,
+                            isError = passwordError != null,
+                            supportingText = {
+                                if (passwordError != null) {
+                                    Text(
+                                        text = passwordError!!,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = AccentOrange,
                                 focusedLabelColor = AccentOrange,
@@ -223,7 +262,10 @@ fun RegisterScreen(
                         // Confirm password field
                         OutlinedTextField(
                             value = confirmPassword,
-                            onValueChange = { confirmPassword = it },
+                            onValueChange = { 
+                                confirmPassword = it
+                                confirmPasswordError = null
+                            },
                             label = { Text("Confirmar senha", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = {
                                 Icon(
@@ -236,6 +278,15 @@ fun RegisterScreen(
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
                             enabled = authState !is AuthState.Loading,
+                            isError = confirmPasswordError != null,
+                            supportingText = {
+                                if (confirmPasswordError != null) {
+                                    Text(
+                                        text = confirmPasswordError!!,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = AccentOrange,
                                 focusedLabelColor = AccentOrange,
@@ -279,37 +330,45 @@ fun RegisterScreen(
                             }
                         }
                         
-                        if (errorMessage.isNotEmpty()) {
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 16.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.errorContainer
-                            ) {
-                                Text(
-                                    text = errorMessage,
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(12.dp),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                        
                         // Register button
                         Button(
                             onClick = {
-                                errorMessage = when {
-                                    username.isBlank() -> "Digite um nome de usuário"
-                                    email.isBlank() -> "Digite um email"
-                                    password.isBlank() -> "Digite uma senha"
-                                    password != confirmPassword -> "As senhas não coincidem"
-                                    password.length < 6 -> "A senha deve ter no mínimo 6 caracteres"
-                                    else -> {
-                                        authViewModel.register(username, email, password)
-                                        ""
-                                    }
+                                var hasError = false
+                                
+                                if (username.isBlank()) {
+                                    usernameError = "Digite um nome de usuário"
+                                    hasError = true
+                                } else if (username.length < 3) {
+                                    usernameError = "O nome deve ter no mínimo 3 caracteres"
+                                    hasError = true
+                                }
+                                
+                                if (email.isBlank()) {
+                                    emailError = "Digite um email"
+                                    hasError = true
+                                } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                    emailError = "Email inválido"
+                                    hasError = true
+                                }
+                                
+                                if (password.isBlank()) {
+                                    passwordError = "Digite uma senha"
+                                    hasError = true
+                                } else if (password.length < 6) {
+                                    passwordError = "A senha deve ter no mínimo 6 caracteres"
+                                    hasError = true
+                                }
+                                
+                                if (confirmPassword.isBlank()) {
+                                    confirmPasswordError = "Confirme sua senha"
+                                    hasError = true
+                                } else if (password != confirmPassword) {
+                                    confirmPasswordError = "As senhas não coincidem"
+                                    hasError = true
+                                }
+                                
+                                if (!hasError) {
+                                    authViewModel.register(username, email, password)
                                 }
                             },
                             modifier = Modifier
